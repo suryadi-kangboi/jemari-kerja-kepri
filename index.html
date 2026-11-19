@@ -32,6 +32,16 @@
     <link rel="icon" type="image/png" sizes="48x48" href="/favicon.png">
     <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <!-- Buka koneksi lebih awal ke server aplikasi (mempercepat muat) -->
+    <link rel="preconnect" href="https://script.google.com">
+    <link rel="preconnect" href="https://script.googleusercontent.com">
+    <link rel="dns-prefetch" href="https://n-5dqkfdptvfkyvgqtp647beetnsxz6pbu7c3za5y-0lu-script.googleusercontent.com">
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="image" href="/icon-512.png">
     <style>
         html, body {
             margin: 0;
@@ -54,9 +64,41 @@ iframe {
     height: 100%;
     border: none;
 }
+/* ===== Layar pembuka saat aplikasi dimuat ===== */
+#splash {
+    position: fixed; inset: 0; z-index: 10;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+    background: radial-gradient(circle at 30% 20%, #FCD34D 0%, #F59E0B 55%, #D97706 100%);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: #134E4A; text-align: center; padding: 24px;
+    transition: opacity .45s ease, visibility .45s ease;
+}
+#splash.hide { opacity: 0; visibility: hidden; }
+#splash .logo {
+    width: 116px; height: 116px; border-radius: 30px; background: #FFFBF0;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 14px 40px rgba(120, 53, 15, .28);
+    animation: splash-pulse 1.6s ease-in-out infinite;
+}
+#splash .logo img { width: 112px; height: 112px; object-fit: contain; }
+#splash h1 { margin: 0; font-size: 28px; font-weight: 900; letter-spacing: .5px; }
+#splash p { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 2px; opacity: .85; }
+#splash .bar { width: 160px; height: 5px; border-radius: 99px; background: rgba(19, 78, 74, .18); overflow: hidden; }
+#splash .bar span { display: block; width: 40%; height: 100%; border-radius: 99px; background: #134E4A; animation: splash-bar 1.2s ease-in-out infinite; }
+#splash small { font-size: 12px; min-height: 16px; opacity: .8; }
+@keyframes splash-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+@keyframes splash-bar { 0% { transform: translateX(-100%); } 100% { transform: translateX(260%); } }
+@media (prefers-reduced-motion: reduce) { #splash .logo, #splash .bar span { animation: none; } }
 </style>
 </head>
 <body>
+    <div id="splash" role="status" aria-live="polite">
+        <div class="logo"><img src="/icon-512.png" alt="Logo JEMARI KERJA"></div>
+        <h1>JEMARI KERJA</h1>
+        <p>JEJARING MANAJEMEN &amp; INFORMASI KETENAGAKERJAAN</p>
+        <div class="bar"><span></span></div>
+        <small id="splash-note">Memuat aplikasi&hellip;</small>
+    </div>
     <div class="iframe-container">
         <iframe
             id="app"
@@ -68,5 +110,22 @@ iframe {
             allow="fullscreen; camera; microphone; display-capture; geolocation;">
         </iframe>
     </div>
+    <script>
+        (function () {
+            var splash = document.getElementById('splash');
+            var note = document.getElementById('splash-note');
+            var done = false;
+            function hide() {
+                if (done) return; done = true;
+                splash.classList.add('hide');
+                setTimeout(function () { splash.remove(); }, 600);
+            }
+            document.getElementById('app').addEventListener('load', function () {
+                setTimeout(hide, 700); /* beri waktu isi aplikasi tampil */
+            });
+            setTimeout(function () { if (!done) note.textContent = 'Koneksi agak lambat, mohon tunggu sebentar\u2026'; }, 8000);
+            setTimeout(hide, 30000); /* pengaman */
+        })();
+    </script>
 </body>
 </html>
